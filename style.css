@@ -47,7 +47,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  
+
   background-color: #f9f9f9;
   cursor: pointer;
   transition: border-color 0.25s;
@@ -73,4 +73,13 @@ button:focus-visible {
   button {
     background-color: #1a1a1a;
   }
+}
+
+#results > pre {
+  text-align: left;
+  padding: 8px;
+  border: 1px solid silver;
+  border-radius: 8px;
+  width: 100%;
+  background-color: black;
 }
