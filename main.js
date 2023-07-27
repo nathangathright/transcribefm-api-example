@@ -13,6 +13,19 @@ const url = document.querySelector('#url');
 const submit = document.querySelector('#submit');
 const sleep = (m) => new Promise((r) => setTimeout(r, m));
 
+function getDurationInSeconds(remoteUrl, callback) {
+  const audio = new Audio(remoteUrl);
+  
+  audio.addEventListener('loadedmetadata', function() {
+    const duration = audio.duration;
+    callback(duration);
+  });
+  
+  audio.addEventListener('error', function() {
+    callback(null);
+  });
+}
+
 submit.addEventListener('click', async () => {
   if (typeof window.webln === 'undefined') {
     return alert('No WebLN available.');
@@ -25,7 +38,13 @@ submit.addEventListener('click', async () => {
   }
 
   try {
-    const response1 = await fetch(`${baseURL}/api/v1/transcribe`, {
+    const durationInSeconds = await getDurationInSeconds(url.value, (duration) => {
+      return durationInSeconds;
+    });
+
+    const isUnderTwoHours = durationInSeconds < 7200;
+    
+    const quote = await fetch(`${baseURL}/api/v1/transcribe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -33,42 +52,46 @@ submit.addEventListener('click', async () => {
       body: JSON.stringify({ audio_url: url.value }),
     });
     // NOTE: expect 402 status code
-    const authHeader = response1.headers.get('WWW-Authenticate');
+    const authHeader = quote.headers.get('WWW-Authenticate');
     const macaroon = authHeader.split('macaroon="')[1].split('"')[0];
     const invoice = authHeader.split('invoice="')[1].split('"')[0];
 
     const payment = await window.webln.sendPayment(invoice);
     const preimage = payment.preimage;
 
-    const resppnse2 = await fetch(`${baseURL}/api/v1/transcribe`, {
+    const transcript = await fetch(`${baseURL}/api/v1/transcribe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `L402 ${macaroon}:${preimage}`,
       },
-      body: JSON.stringify({ audio_url: url.value }),
+      body: JSON.stringify({
+        audio_url: url.value,
+        ...(isUnderTwoHours && { format: 'txt'})
+      }),
     });
 
-    if (resppnse2.status === 200) {
-      const { transcript_id } = await resppnse2.json();
-      console.log(transcript_id);
-      await sleep(2000);
-      const results = await fetch(
-        `${baseURL}/transcript/${transcript_id}.json`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+    if (transcript.status === 200) {
+        if (isUnderTwoHours) {
+          // assume response is text
+          document.querySelector('#results').innerHTML = `<pre>${await transcript.text()}</pre>`;
+        } else {
+          // assume response is transcript_id
+          const { transcript_id } = await transcript.json();
+          // wait 5 seconds
+          await sleep(5000);
+          // fetch txt file
+          const text = await fetch(`${baseURL}/transcript/${transcript_id}.txt`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'text/plain'
+            }
+          });
+          // return text
+          document.querySelector('#results').innerHTML = `<pre>${await text.text()}</pre>`;
         }
-      );
-      const jsonResults = await results.json();
-      document.querySelector('#results').innerHTML = `<pre>${JSON.stringify(
-        jsonResults,
-        null,
-        2
-      )}</pre>`;
     } else {
-      const err = await resppnse2.text();
+      const err = await transcript.text();
       throw new Error(err);
     }
   } catch (error) {
