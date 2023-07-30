@@ -53,6 +53,11 @@ submit.addEventListener('click', async () => {
     });
     // NOTE: expect 402 status code
     const authHeader = quote.headers.get('WWW-Authenticate');
+
+    if (!authHeader) {
+      throw new Error('No WWW-Authenticate header');
+    }
+
     const macaroon = authHeader.split('macaroon="')[1].split('"')[0];
     const invoice = authHeader.split('invoice="')[1].split('"')[0];
 
