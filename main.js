@@ -6,9 +6,6 @@ document.querySelector('#app').innerHTML = `
   <div id="results"></div>
 `;
 
-const baseURL = import.meta.env.PROD
-  ? 'https://transcribe.fm'
-  : 'http://localhost:8080';
 const url = document.querySelector('#url');
 const submit = document.querySelector('#submit');
 const sleep = (m) => new Promise((r) => setTimeout(r, m));
@@ -44,7 +41,7 @@ submit.addEventListener('click', async () => {
 
     const isUnderTwoHours = durationInSeconds < 7200;
     
-    const quote = await fetch(`${baseURL}/api/v1/transcribe`, {
+    const quote = await fetch('https://transcribe.fm/api/v1/transcribe', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -64,7 +61,7 @@ submit.addEventListener('click', async () => {
     const payment = await window.webln.sendPayment(invoice);
     const preimage = payment.preimage;
 
-    const transcript = await fetch(`${baseURL}/api/v1/transcribe`, {
+    const transcript = await fetch('https://transcribe.fm/api/v1/transcribe', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -84,9 +81,9 @@ submit.addEventListener('click', async () => {
           // assume response is transcript_id
           const { transcript_id } = await transcript.json();
           // wait 5 seconds
-          await sleep(5000);
+          await sleep(durationInSeconds / 120 * 1000); // wait 1/120th of the duration
           // fetch txt file
-          const text = await fetch(`${baseURL}/transcript/${transcript_id}.txt`, {
+          const text = await fetch(`https://transcribe.fm/transcript/${transcript_id}.txt`, {
             method: 'GET',
             headers: {
               'Content-Type': 'text/plain'
