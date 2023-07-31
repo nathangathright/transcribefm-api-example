@@ -6,23 +6,24 @@ const progressCalc = document.querySelector('#progressCalc');
 const progressInvoice = document.querySelector('#progressInvoice');
 const progressPay = document.querySelector('#progressPay');
 const progressTranscribe = document.querySelector('#progressTranscribe');
+const progressFetch = document.querySelector('#progressFetch');
 const progressView = document.querySelector('#progressView');
 const submit = document.querySelector('#submit');
 const sleep = (m) => new Promise((r) => setTimeout(r, m));
 
-function getDurationInSeconds(remoteUrl, callback) {
-  return new Promise((resolve, reject) => {
-    const audio = new Audio(remoteUrl);
+// function getDurationInSeconds(remoteUrl, callback) {
+//   return new Promise((resolve, reject) => {
+//     const audio = new Audio(remoteUrl);
 
-    audio.addEventListener('loadedmetadata', function () {
-      resolve(audio.duration);
-    });
+//     audio.addEventListener('loadedmetadata', function () {
+//       resolve(audio.duration);
+//     });
 
-    audio.addEventListener('error', function () {
-      reject('Could not determine audio duration');
-    });
-  });
-}
+//     audio.addEventListener('error', function () {
+//       reject('Could not determine audio duration');
+//     });
+//   });
+// }
 
 submit.addEventListener('click', async () => {
   if (typeof window.webln === 'undefined') {
@@ -40,8 +41,8 @@ submit.addEventListener('click', async () => {
     progressSub.classList.replace('current', 'complete');
     progressCalc.classList.replace('next', 'current');
 
-    const durationInSeconds = await getDurationInSeconds(url.value);
-    const isUnderTwoHours = durationInSeconds < 7200;
+    // const durationInSeconds = await getDurationInSeconds(url.value);
+    // const isUnderTwoHours = durationInSeconds < 7200;
 
     /* UI Progress Logic */
     progressCalc.classList.replace('current', 'complete');
@@ -81,52 +82,40 @@ submit.addEventListener('click', async () => {
         'Content-Type': 'application/json',
         Authorization: `L402 ${macaroon}:${preimage}`,
       },
-      body: JSON.stringify({
-        audio_url: url.value,
-        ...(isUnderTwoHours && { format: 'txt' }),
-      }),
+      body: JSON.stringify({ audio_url: url.value }),
     });
 
     if (transcript.status === 200) {
       /* UI Progress Logic */
       progressTranscribe.classList.replace('current', 'complete');
-      progressView.classList.remove('next');
+      progressFetch.classList.replace('next', 'current');
 
-      if (isUnderTwoHours) {
-        /* UI Progress Logic */
-        progressView.classList.replace('next', 'complete');
+      const { transcript_id } = await transcript.json();
 
-        // assume response is text
-        document.querySelector(
-          '#results'
-        ).innerHTML = `<pre>${await transcript.text()}</pre>`;
-      } else {
-        /* UI Progress Logic */
-        progressView.classList.replace('next', 'current');
+      // wait 1/120th of the duration
+      await sleep((durationInSeconds / 120) * 1000 + 1000);
+      // fetch txt file
+      const text = await fetch(
+        `https://transcribe.fm/transcript/${transcript_id}.txt`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+        }
+      );
 
-        // assume response is transcript_id
-        const { transcript_id } = await transcript.json();
-        // wait 5 seconds
-        await sleep((durationInSeconds / 120) * 1000); // wait 1/120th of the duration
-        // fetch txt file
-        const text = await fetch(
-          `https://transcribe.fm/transcript/${transcript_id}.txt`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'text/plain',
-            },
-          }
-        );
+      /* UI Progress Logic */
+      progressFetch.classList.replace('current', 'complete');
+      progressView.classList.replace('next', 'current');
 
-        /* UI Progress Logic */
-        progressView.classList.replace('current', 'complete');
+      // return text
+      document.querySelector(
+        '#results'
+      ).innerHTML = `<pre>${await text.text()}</pre>`;
 
-        // return text
-        document.querySelector(
-          '#results'
-        ).innerHTML = `<pre>${await text.text()}</pre>`;
-      }
+      /* UI Progress Logic */
+      progressView.classList.replace('current', 'complete');
     } else {
       const err = await transcript.text();
       throw new Error(err);
