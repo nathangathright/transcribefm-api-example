@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -6,7 +6,43 @@
     <title>Transcribe.fm API Example</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <img
+        src="https://transcribe.fm/icon@3x.png"
+        alt="TranscribeFM Logo"
+        width="150"
+        height="150"
+      />
+      <h2>Transcribe FM API Demo</h2>
+      <div class="form">
+        <label for="url">Audio URL to Transcribe</label>
+        <input
+          type="url"
+          id="url"
+          class="form-field"
+          name="url"
+          placeholder="Enter a URL"
+          value="https://podnews.net/audio/podnews230721.mp3"
+        />
+        <button id="submit">Transcribe</button>
+      </div>
+      <div id="progress">
+        <h3>Progress</h3>
+        <ul>
+          <li id="progressSub" class="current">Awaiting form submission</li>
+          <li id="progressCalc" class="next">Calculate duration of audio</li>
+          <li id="progressInvoice" class="next">
+            Get invoice from https://transcribe.fm/api/v1/transcribe
+          </li>
+          <li id="progressPay" class="next">Ask for payment via webln</li>
+          <li id="progressTranscribe" class="next">
+            Send proof of payment to /api/v1/transcribe for transcription
+          </li>
+          <li id="progressView" class="next">View results</li>
+        </ul>
+      </div>
+      <div id="results"></div>
+    </div>
     <script type="module" src="/main.js"></script>
   </body>
 </html>

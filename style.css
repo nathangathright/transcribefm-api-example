@@ -76,9 +76,119 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+img {
+  align-self: center;
+}
+
+.form {
+  padding: 16px;
+  border: 1px solid white;
+  border-radius: 8px;
+  background-color: rgb(24, 23, 23);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 8px 0;
+  width: 100%;
+}
+.form > .form-field {
+  margin: 8px 0;
+  display: flex;
+  width: 80%;
+}
+.form > label {
+  margin: 8px 0 4px;
+  display: flex;
+  width: 80%;
+}
+.form > button {
+  margin: 8px 0;
+  align-self: flex-end;
+}
+
+input {
+  padding: 8px;
+  border-radius: 4px;
+  border: none;
+}
+
+#progress {
+  text-align: left;
+  padding: 16px;
+  border: 1px solid #65ae4f;
+  background-color: rgb(24, 23, 23);
+  border-radius: 8px;
+  width: 100%;
+  margin: 8px 0;
+}
+
+ul {
+  list-style-type: none;
+}
+
+@keyframes blinkProgress {
+  0% {
+    border-color: #65ae4f;
+  }
+  25% {
+    border-color: white;
+  }
+  50% {
+    border-color: #65ae4f;
+  }
+  75% {
+    border-color: white;
+  }
+  100% {
+    border-color: #65ae4f;
+  }
+}
+
+ul li::before {
+  content: '>';
+  font-family: serif;
+  font-style: bold;
+  display: inline-block;
+  font-weight: 800;
+  padding: 1px 3px;
+  line-height: 0.8em;
+  text-align: center;
+  vertical-align: center;
+  margin: 0px 10px 0px 0px;
+  border-radius: 50%;
+  color: transparent;
+}
+
+ul li.current::before {
+  border: 2px solid white;
+  background: transparent;
+  animation: blinkProgress 2s infinite;
+}
+
+ul li.next::before {
+  border: 2px solid gray;
+  background: transparent;
+}
+ul li.next {
+  color: gray;
+}
+
+ul li.complete::before {
+  border: 2px solid #65ae4f;
+  background: #65ae4f;
+}
+ul li.error::before {
+  border: 2px solid #ae4f4f;
+  background: transparent;
+}
+
+h3 {
+  margin: 0;
+}
+
 #results > pre {
   text-align: left;
-  padding: 8px;
+  padding: 16px;
   border: 1px solid silver;
   border-radius: 8px;
   width: 100%;
