@@ -1,25 +1,26 @@
 import './style.css';
 
-document.querySelector('#app').innerHTML = `
-  <input type="url" id="url" name="url" placeholder="Enter a URL" value="https://podnews.net/audio/podnews230721.mp3" />
-  <button id="submit">Transcribe</button>
-  <div id="results"></div>
-`;
-
 const url = document.querySelector('#url');
+const progress = document.querySelector('#progress');
+const progressInvoice = document.querySelector('#progressInvoice');
+const progressPay = document.querySelector('#progressPay');
+const progressTranscribe = document.querySelector('#progressTranscribe');
+const progressFetch = document.querySelector('#progressFetch');
+const progressView = document.querySelector('#progressView');
 const submit = document.querySelector('#submit');
 const sleep = (m) => new Promise((r) => setTimeout(r, m));
 
 function getDurationInSeconds(remoteUrl, callback) {
-  const audio = new Audio(remoteUrl);
-  
-  audio.addEventListener('loadedmetadata', function() {
-    const duration = audio.duration;
-    callback(duration);
-  });
-  
-  audio.addEventListener('error', function() {
-    callback(null);
+  return new Promise((resolve, reject) => {
+    const audio = new Audio(remoteUrl);
+
+    audio.addEventListener('loadedmetadata', function () {
+      resolve(audio.duration);
+    });
+
+    audio.addEventListener('error', function () {
+      reject('Could not determine audio duration');
+    });
   });
 }
 
@@ -35,12 +36,12 @@ submit.addEventListener('click', async () => {
   }
 
   try {
-    const durationInSeconds = await getDurationInSeconds(url.value, (duration) => {
-      return durationInSeconds;
-    });
+    // show #progress
+    progress.classList.remove('hidden');
+    /* UI Progress Logic */
+    const durationInSeconds = await getDurationInSeconds(url.value);
+    progressInvoice.classList.replace('next', 'current');
 
-    const isUnderTwoHours = durationInSeconds < 7200;
-    
     const quote = await fetch('https://transcribe.fm/api/v1/transcribe', {
       method: 'POST',
       headers: {
@@ -55,11 +56,19 @@ submit.addEventListener('click', async () => {
       throw new Error('No WWW-Authenticate header');
     }
 
+    /* UI Progress Logic */
+    progressInvoice.classList.replace('current', 'complete');
+    progressPay.classList.replace('next', 'current');
+
     const macaroon = authHeader.split('macaroon="')[1].split('"')[0];
     const invoice = authHeader.split('invoice="')[1].split('"')[0];
 
     const payment = await window.webln.sendPayment(invoice);
     const preimage = payment.preimage;
+
+    /* UI Progress Logic */
+    progressPay.classList.replace('current', 'complete');
+    progressTranscribe.classList.replace('next', 'current');
 
     const transcript = await fetch('https://transcribe.fm/api/v1/transcribe', {
       method: 'POST',
@@ -67,36 +76,50 @@ submit.addEventListener('click', async () => {
         'Content-Type': 'application/json',
         Authorization: `L402 ${macaroon}:${preimage}`,
       },
-      body: JSON.stringify({
-        audio_url: url.value,
-        ...(isUnderTwoHours && { format: 'txt'})
-      }),
+      body: JSON.stringify({ audio_url: url.value }),
     });
 
     if (transcript.status === 200) {
-        if (isUnderTwoHours) {
-          // assume response is text
-          document.querySelector('#results').innerHTML = `<pre>${await transcript.text()}</pre>`;
-        } else {
-          // assume response is transcript_id
-          const { transcript_id } = await transcript.json();
-          // wait 5 seconds
-          await sleep(durationInSeconds / 120 * 1000); // wait 1/120th of the duration
-          // fetch txt file
-          const text = await fetch(`https://transcribe.fm/transcript/${transcript_id}.txt`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'text/plain'
-            }
-          });
-          // return text
-          document.querySelector('#results').innerHTML = `<pre>${await text.text()}</pre>`;
+      /* UI Progress Logic */
+      progressTranscribe.classList.replace('current', 'complete');
+      progressFetch.classList.replace('next', 'current');
+
+      const { transcript_id } = await transcript.json();
+
+      // wait 1/120th of the duration + 1 second
+      await sleep((durationInSeconds / 120) * 1000 + 1000);
+      // fetch txt file
+      const text = await fetch(
+        `https://transcribe.fm/transcript/${transcript_id}.txt`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'text/plain',
+          },
         }
+      );
+
+      /* UI Progress Logic */
+      progressFetch.classList.replace('current', 'complete');
+      progressView.classList.replace('next', 'current');
+
+      // return text
+      document.querySelector(
+        '#results'
+      ).innerHTML = `<pre>${await text.text()}</pre>`;
+
+      /* UI Progress Logic */
+      progressView.classList.replace('current', 'complete');
     } else {
       const err = await transcript.text();
       throw new Error(err);
     }
   } catch (error) {
+    /* UI Progress Logic */
+    document
+      .querySelector('#progress .current')
+      .classList.replace('current', 'error');
+
     console.log(error);
   }
 });
