@@ -1,14 +1,26 @@
+html {
+  font-size: 16px;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: #213547;
-  background-color: #ffffff;
+  --foreground: #213547;
+  --background: #F1F1F1;
 
   --primary: #646cff;
-  --primary-contrast: #ffffff;
+  --primary-contrast: #F1F1F1;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -19,11 +31,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    color: rgba(255, 255, 255, 0.87);
-    background-color: #242424;
-  }
-  a:hover {
-    color: #747bff;
+    --foreground: #FFFFFF;
+    --background: #213547;
   }
 }
 
@@ -42,6 +51,8 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  color: var(--foreground);
+  background-color: var(--background);
 }
 
 #app {
@@ -55,6 +66,8 @@ body {
 }
 
 button {
+  margin: 0.5em 0 0;
+  align-self: flex-end;
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
@@ -82,65 +95,72 @@ img {
 
 .form {
   padding: 16px;
-  border: 1px solid white;
+  border: 1px solid var(--foreground);
+  background-color: var(--background);
   border-radius: 8px;
-  background-color: rgb(24, 23, 23);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin: 8px 0;
+  margin: 0;
   width: 100%;
 }
-.form > .form-field {
-  margin: 8px 0;
-  display: flex;
-  width: 80%;
-}
-.form > label {
-  margin: 8px 0 4px;
-  display: flex;
-  width: 80%;
-}
-.form > button {
-  margin: 8px 0;
-  align-self: flex-end;
+
+label {
+  line-height: 1;
+  font-weight: bold;
 }
 
 input {
-  padding: 8px;
+  padding: 0.75rem;
   border-radius: 4px;
-  border: none;
+  border: 1px solid var(--foreground);
+  width: 100%;
+  background: none;
+  margin: .5rem 0 0;
+}
+
+#progress.hidden {
+  overflow: hidden;
+  max-height: 0;
 }
 
 #progress {
   text-align: left;
-  padding: 16px;
-  border: 1px solid #65ae4f;
-  background-color: rgb(24, 23, 23);
-  border-radius: 8px;
+  padding: 0 1rem;
   width: 100%;
-  margin: 8px 0;
+  transition: 0.2s ease-in-out;
+}
+
+#progress > *:first-child {
+  padding-top: .5rem;
+}
+
+#progress > *:first-child {
+  padding-bottom: .5rem;
 }
 
 ul {
   list-style-type: none;
+  margin: 0;
+  padding: 0 0.5rem;
+  line-height: 2;
 }
 
 @keyframes blinkProgress {
   0% {
-    border-color: #65ae4f;
+    border-color: var(--primary);
   }
   25% {
-    border-color: white;
+    border-color: var(--foreground);
   }
   50% {
-    border-color: #65ae4f;
+    border-color: var(--primary);
   }
   75% {
-    border-color: white;
+    border-color: var(--foreground);
   }
   100% {
-    border-color: #65ae4f;
+    border-color: var(--primary);
   }
 }
 
@@ -174,8 +194,8 @@ ul li.next {
 }
 
 ul li.complete::before {
-  border: 2px solid #65ae4f;
-  background: #65ae4f;
+  border: 2px solid var(--primary);
+  background: var(--primary);
 }
 ul li.error::before {
   border: 2px solid #ae4f4f;
@@ -189,9 +209,10 @@ h3 {
 #results > pre {
   text-align: left;
   padding: 16px;
-  border: 1px solid silver;
+  border: none;
   border-radius: 8px;
   width: 100%;
   background-color: black;
   white-space: pre-wrap;
+  color: #FFF;
 }

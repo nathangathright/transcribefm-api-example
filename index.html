@@ -13,7 +13,7 @@
         width="150"
         height="150"
       />
-      <h2>Transcribe FM API Demo</h2>
+      <h2>Transcribe.fm API Demo</h2>
       <div class="form">
         <label for="url">Audio URL to Transcribe</label>
         <input
@@ -26,20 +26,14 @@
         />
         <button id="submit">Transcribe</button>
       </div>
-      <div id="progress">
+      <div id="progress" class="hidden">
         <h3>Progress</h3>
         <ul>
-          <li id="progressSub" class="current">Awaiting form submission</li>
-          <li id="progressCalc" class="next">Calculate duration of audio</li>
-          <li id="progressInvoice" class="next">
-            Get invoice from https://transcribe.fm/api/v1/transcribe
-          </li>
+          <li id="progressInvoice" class="current">Request invoice from https://transcribe.fm/api/v1/transcribe</li>
           <li id="progressPay" class="next">Ask for payment via webln</li>
-          <li id="progressTranscribe" class="next">
-            Send proof of payment to /api/v1/transcribe for transcription
-          </li>
-          <li id="progressFetch" class="next">Fetch Transcript</li>
-          <li id="progressView" class="next">View results</li>
+          <li id="progressTranscribe" class="next">Send proof of payment to /api/v1/transcribe</li>
+          <li id="progressFetch" class="next">Fetch transcript</li>
+          <li id="progressView" class="next">Display results</li>
         </ul>
       </div>
       <div id="results"></div>

@@ -1,8 +1,7 @@
 import './style.css';
 
 const url = document.querySelector('#url');
-const progressSub = document.querySelector('#progressSub');
-const progressCalc = document.querySelector('#progressCalc');
+const progress = document.querySelector('#progress');
 const progressInvoice = document.querySelector('#progressInvoice');
 const progressPay = document.querySelector('#progressPay');
 const progressTranscribe = document.querySelector('#progressTranscribe');
@@ -11,19 +10,19 @@ const progressView = document.querySelector('#progressView');
 const submit = document.querySelector('#submit');
 const sleep = (m) => new Promise((r) => setTimeout(r, m));
 
-// function getDurationInSeconds(remoteUrl, callback) {
-//   return new Promise((resolve, reject) => {
-//     const audio = new Audio(remoteUrl);
+function getDurationInSeconds(remoteUrl, callback) {
+  return new Promise((resolve, reject) => {
+    const audio = new Audio(remoteUrl);
 
-//     audio.addEventListener('loadedmetadata', function () {
-//       resolve(audio.duration);
-//     });
+    audio.addEventListener('loadedmetadata', function () {
+      resolve(audio.duration);
+    });
 
-//     audio.addEventListener('error', function () {
-//       reject('Could not determine audio duration');
-//     });
-//   });
-// }
+    audio.addEventListener('error', function () {
+      reject('Could not determine audio duration');
+    });
+  });
+}
 
 submit.addEventListener('click', async () => {
   if (typeof window.webln === 'undefined') {
@@ -37,15 +36,10 @@ submit.addEventListener('click', async () => {
   }
 
   try {
+    // show #progress
+    progress.classList.remove('hidden');
     /* UI Progress Logic */
-    progressSub.classList.replace('current', 'complete');
-    progressCalc.classList.replace('next', 'current');
-
-    // const durationInSeconds = await getDurationInSeconds(url.value);
-    // const isUnderTwoHours = durationInSeconds < 7200;
-
-    /* UI Progress Logic */
-    progressCalc.classList.replace('current', 'complete');
+    const durationInSeconds = await getDurationInSeconds(url.value);
     progressInvoice.classList.replace('next', 'current');
 
     const quote = await fetch('https://transcribe.fm/api/v1/transcribe', {
@@ -92,7 +86,7 @@ submit.addEventListener('click', async () => {
 
       const { transcript_id } = await transcript.json();
 
-      // wait 1/120th of the duration
+      // wait 1/120th of the duration + 1 second
       await sleep((durationInSeconds / 120) * 1000 + 1000);
       // fetch txt file
       const text = await fetch(
