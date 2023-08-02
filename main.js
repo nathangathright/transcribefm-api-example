@@ -86,8 +86,8 @@ submit.addEventListener('click', async () => {
 
       const { transcript_id } = await transcript.json();
 
-      // wait 1/120th of the duration + 1 second
-      await sleep((durationInSeconds / 120) * 1000 + 1000);
+      // wait 1/120th of the duration + 2 second
+      await sleep((durationInSeconds / 120) * 1000 + 2000);
       // fetch txt file
       const text = await fetch(
         `https://transcribe.fm/transcript/${transcript_id}.txt`,
@@ -98,6 +98,21 @@ submit.addEventListener('click', async () => {
           },
         }
       );
+
+      const interval = setInterval(() => {
+        fetch(`/transcript/${fileName}.txt`).then((response) => {
+          // The API call was successful!
+          if (response.ok) {
+            document.querySelector(
+              '#results'
+            ).innerHTML = `<pre>${response.text()}</pre>`;
+          }
+        });
+      }, 1000);
+
+      setTimeout(() => {
+        clearInterval(interval);
+      }, 5 * 60 * 1000); // 5 minutes
 
       /* UI Progress Logic */
       progressFetch.classList.replace('current', 'complete');
