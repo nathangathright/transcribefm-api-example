@@ -86,42 +86,25 @@ submit.addEventListener('click', async () => {
 
       const { transcript_id } = await transcript.json();
 
-      // wait 1/120th of the duration + 2 second
-      await sleep((durationInSeconds / 120) * 1000 + 2000);
       // fetch txt file
-      const text = await fetch(
-        `https://transcribe.fm/transcript/${transcript_id}.txt`,
-        {
-          method: 'GET',
+      const text = () => {
+        return fetch(`https://transcribe.fm/api/v1/download/${transcript_id}`, {
           headers: {
-            'Content-Type': 'text/plain',
+            Accept: 'text/plain'
           },
         }
-      );
+      )};
 
-      const interval = setInterval(() => {
-        fetch(`/transcript/${fileName}.txt`).then((response) => {
-          // The API call was successful!
-          if (response.ok) {
-            document.querySelector(
-              '#results'
-            ).innerHTML = `<pre>${response.text()}</pre>`;
-          }
-        });
-      }, 1000);
-
-      setTimeout(() => {
-        clearInterval(interval);
-      }, 5 * 60 * 1000); // 5 minutes
+      let transcriptResponse = await text();
+      while (transcriptResponse.status === 404) {
+        await sleep(1000);
+        transcriptResponse = await text();
+      }
+      document.querySelector('#results').innerHTML = `<pre>${await transcriptResponse.text()}</pre>`;
 
       /* UI Progress Logic */
       progressFetch.classList.replace('current', 'complete');
       progressView.classList.replace('next', 'current');
-
-      // return text
-      document.querySelector(
-        '#results'
-      ).innerHTML = `<pre>${await text.text()}</pre>`;
 
       /* UI Progress Logic */
       progressView.classList.replace('current', 'complete');
