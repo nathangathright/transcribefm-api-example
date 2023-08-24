@@ -7,37 +7,20 @@
   </head>
   <body>
     <div id="app">
-      <img
-        src="https://transcribe.fm/icon@3x.png"
-        alt="TranscribeFM Logo"
-        width="150"
-        height="150"
-      />
-      <h2>Transcribe.fm API Demo</h2>
-      <div class="form">
-        <label for="url">Audio URL to Transcribe</label>
+      <h1>Transcribe.fm API Demo</h1>
+      <form>
+        <label for="url">Audio URL</label>
         <input
           type="url"
           id="url"
-          class="form-field"
           name="url"
-          placeholder="Enter a URL"
           value="https://podnews.net/audio/podnews230721.mp3"
         />
         <button id="submit">Transcribe</button>
-      </div>
-      <div id="progress" class="hidden">
-        <h3>Progress</h3>
-        <ul>
-          <li id="progressInvoice" class="current">Request invoice from https://transcribe.fm/api/v1/transcribe</li>
-          <li id="progressPay" class="next">Ask for payment via webln</li>
-          <li id="progressTranscribe" class="next">Send proof of payment to /api/v1/transcribe</li>
-          <li id="progressFetch" class="next">Fetch transcript</li>
-          <li id="progressView" class="next">Display results</li>
-        </ul>
-      </div>
-      <div id="results"></div>
+      </form>
+      <pre></pre>
     </div>
     <script type="module" src="/main.js"></script>
+    <script src="https://replit.com/public/js/replit-badge-v2.js" theme="dark" position="bottom-right"></script>
   </body>
 </html>

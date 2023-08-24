@@ -1,30 +1,12 @@
 import './style.css';
 
 const url = document.querySelector('#url');
-const progress = document.querySelector('#progress');
-const progressInvoice = document.querySelector('#progressInvoice');
-const progressPay = document.querySelector('#progressPay');
-const progressTranscribe = document.querySelector('#progressTranscribe');
-const progressFetch = document.querySelector('#progressFetch');
-const progressView = document.querySelector('#progressView');
 const submit = document.querySelector('#submit');
 const sleep = (m) => new Promise((r) => setTimeout(r, m));
 
-function getDurationInSeconds(remoteUrl, callback) {
-  return new Promise((resolve, reject) => {
-    const audio = new Audio(remoteUrl);
-
-    audio.addEventListener('loadedmetadata', function () {
-      resolve(audio.duration);
-    });
-
-    audio.addEventListener('error', function () {
-      reject('Could not determine audio duration');
-    });
-  });
-}
-
-submit.addEventListener('click', async () => {
+submit.addEventListener('click', async (event) => {
+  event.preventDefault();
+  submit.disabled = true;
   if (typeof window.webln === 'undefined') {
     return alert('No WebLN available.');
   }
@@ -36,12 +18,7 @@ submit.addEventListener('click', async () => {
   }
 
   try {
-    // show #progress
-    progress.classList.remove('hidden');
-    /* UI Progress Logic */
-    const durationInSeconds = await getDurationInSeconds(url.value);
-    progressInvoice.classList.replace('next', 'current');
-
+    submit.innerText = "Requesting invoice…";
     const quote = await fetch('https://transcribe.fm/api/v1/transcribe', {
       method: 'POST',
       headers: {
@@ -56,20 +33,14 @@ submit.addEventListener('click', async () => {
       throw new Error('No WWW-Authenticate header');
     }
 
-    /* UI Progress Logic */
-    progressInvoice.classList.replace('current', 'complete');
-    progressPay.classList.replace('next', 'current');
-
     const macaroon = authHeader.split('macaroon="')[1].split('"')[0];
     const invoice = authHeader.split('invoice="')[1].split('"')[0];
 
+    submit.innerText = "Requesting payment…"
     const payment = await window.webln.sendPayment(invoice);
     const preimage = payment.preimage;
 
-    /* UI Progress Logic */
-    progressPay.classList.replace('current', 'complete');
-    progressTranscribe.classList.replace('next', 'current');
-
+    submit.innerText = "Requesting transcription…"
     const transcript = await fetch('https://transcribe.fm/api/v1/transcribe', {
       method: 'POST',
       headers: {
@@ -79,14 +50,10 @@ submit.addEventListener('click', async () => {
       body: JSON.stringify({ audio_url: url.value }),
     });
 
-    if (transcript.status === 200) {
-      /* UI Progress Logic */
-      progressTranscribe.classList.replace('current', 'complete');
-      progressFetch.classList.replace('next', 'current');
-
+    if (transcript.status === 200) {      
       const { transcript_id } = await transcript.json();
 
-      // fetch txt file
+      submit.innerText = "Requesting Transcript as TXT…"
       const text = () => {
         return fetch(`https://transcribe.fm/api/v1/download/${transcript_id}`, {
           headers: {
@@ -97,27 +64,17 @@ submit.addEventListener('click', async () => {
 
       let transcriptResponse = await text();
       while (transcriptResponse.status === 404) {
+        submit.innerText = "Transcript not ready, waiting 1s…"
         await sleep(1000);
         transcriptResponse = await text();
       }
-      document.querySelector('#results').innerHTML = `<pre>${await transcriptResponse.text()}</pre>`;
-
-      /* UI Progress Logic */
-      progressFetch.classList.replace('current', 'complete');
-      progressView.classList.replace('next', 'current');
-
-      /* UI Progress Logic */
-      progressView.classList.replace('current', 'complete');
+      submit.innerText = "Transcript received"
+      document.querySelector('pre').innerHTML = await transcriptResponse.text();
     } else {
       const err = await transcript.text();
       throw new Error(err);
     }
   } catch (error) {
-    /* UI Progress Logic */
-    document
-      .querySelector('#progress .current')
-      .classList.replace('current', 'error');
-
     console.log(error);
   }
 });
