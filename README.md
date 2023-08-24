@@ -1,4 +1,4 @@
-3# Transcribe.fm
+# Transcribe.fm
 
 Transcribe.fm is a lightning-fast transcription service for podcasters. We can transcribe an hour of audio to in just 30 seconds with speaker diarization & word-by-word fidelity. Pay what you want in Satoshis using a Lightning wallet.
 
